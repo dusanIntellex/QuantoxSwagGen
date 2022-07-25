@@ -48,7 +48,7 @@ public enum {{ type }}: Codable, Equatable {
     }
 }
 {% else %}
-public {{ options.modelType }} {{ type }}: {% if parent %}{{ parent.type }}{% else %}{% if options.modelProtocol %}{{ options.modelProtocol }}{% else %}Codable, Equatable{% endif %}{% endif %} {
+public {{ options.modelType }} {{ type }}: {% if parent %}{{ parent.type }}{% else %}{% if options.modelProtocol %}{{ options.modelProtocol }}{% else %}Codable, Equatable, RandomElementProtocol{% endif %}{% endif %} {
     {% for enum in enums %}
     {% if not enum.isGlobal %}
 
@@ -171,5 +171,18 @@ public {{ options.modelType }} {{ type }}: {% if parent %}{{ parent.type }}{% el
     }
     {% endif %}
     {% endif %}
+    
+    static var dummy : {{ type }} = {
+        return {{ type }}({% for property in allProperties %}
+            {% for singleEnum in enums where singleEnum.enumName == property.type %}{{ property.name }} : {{property.type}}.allCases.randomElement()!{% empty %}{% if property.name == "country" or property.name == "city" or property.name == "state" or property.name == "username" or property.name == "lastName" or property.name == "firstName" or property.name == "title" or property.name == "street" %}
+            {{ property.name }}: Randoms.randomFake{{property.name|upperFirstLetter}}(){% else %}{% if property.isArray %}{{ property.name }} : {{property.type}}.random(){% else %}{% if property.example %}{% if property.type == "String" %}{{ property.name }} : "{{ property.example }}"{% else %}{{ property.name }} : {{ property.example }}{% endif %}{% else %}{{ property.name }} : {{ property.type }}.random(){% endif %}{% endif %}{% endif %}{% endfor %}{% ifnot forloop.last %}, {% endif %}{% endfor %}
+        )
+    }()
 }
 {% endif %}
+
+extension {{ type}} : RandomElementProtocol {
+    static func random() -> {{ type }} {
+        return {{ type }}.dummy
+    }
+}

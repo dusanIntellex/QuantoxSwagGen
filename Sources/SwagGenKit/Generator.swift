@@ -166,6 +166,8 @@ public class Generator {
                     var mergedContext = context
                     if mergedContext["options"] == nil {
                         mergedContext["options"] = templateConfig.options
+                        
+                        mergedContext["description"] = "Some crazy text"
                     }
                     try generateTemplateFile(file, template: template, context: mergedContext)
                 } else if let contexts: [JSONDictionary] = context.json(atKeyPath: .key(fileContext)) {
@@ -173,6 +175,8 @@ public class Generator {
                         var mergedContext = context
                         if mergedContext["options"] == nil {
                             mergedContext["options"] = templateConfig.options
+                            
+                            mergedContext["description"] = "Some crazy text"
                         }
                         try generateTemplateFile(file, template: template, context: mergedContext)
                     }

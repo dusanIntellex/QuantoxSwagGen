@@ -5,7 +5,7 @@ options:
   mutableModels: true # whether model properties are mutable
   safeOptionalDecoding: false # set invalid optionals to nil instead of throwing
   safeArrayDecoding: false # filter out invalid items in array instead of throwing
-  modelPrefix: null # applied to model classes and enums
+  modelPrefix: Model # applied to model classes and enums
   modelSuffix: null # applied to model classes
   modelType: class # can be struct or class
   modelInheritance: true # must be false for struct modelType
@@ -41,6 +41,7 @@ templateFiles:
   - path: Sources/APIResult.swift
   - path: Sources/RequestBehaviour.swift
   - path: Sources/AnyCodable.swift
+  - path: Sources/SwiftRandoms.swift
   - path: Podspec.podspec
     destination: "{{ options.name }}.podspec"
   - path: Sources/Enum.swift
