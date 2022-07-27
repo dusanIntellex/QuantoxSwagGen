@@ -8,69 +8,69 @@
 import UIKit
 import CloudKit
 
-protocol RandomElementProtocol {
+public protocol RandomElementProtocol {
     associatedtype ObjectType = Self
     static func random() -> ObjectType
 }
 
 extension Collection where Element: RandomElementProtocol {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() as! Self.Element }
     }
 }
 
 extension Collection where Element == Bool {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
 }
 
 extension Collection where Element == Int {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
 }
 
 extension Collection where Element == Int32 {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
 }
 
 extension Collection where Element == String {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random(minimumLength: 4, maximumLength: 16) }
     }
 }
 
 extension Collection where Element == Double {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
 }
 
 extension Collection where Element == Float {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
 }
 
 extension Collection where Element == CGFloat {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
 }
 
 extension Collection where Element == Date {
-    static func random() -> [Element] {
+    public static func random() -> [Element] {
         let itemsCount = Int.random(2,10)
         return (0...itemsCount).map{ _ in Element.random() }
     }
@@ -312,6 +312,10 @@ public struct Randoms {
     public static func randomFakeGender() -> String {
         return Bool.random() ? "Male" : "Female"
     }
+    
+    public static func randomFakeEmail() -> String {
+        return randomFakeFirstName() + "\(Int.random())" + "@fake.com"
+    }
 
     public static func randomFakeConversation() -> String {
         let convoList = ["You embarrassed me this evening.", "You don't think that was just lemonade in your glass, do you?", "Do you ever think we should just stop doing this?", "Why didn't he come and talk to me himself?", "Promise me you'll look after your mother.", "If you get me his phone, I might reconsider.", "I think the room is bugged.", "No! I'm tired of doing what you say.", "For some reason, I'm attracted to you."]
@@ -363,6 +367,22 @@ public struct Randoms {
 
     public static func randomZipCode() -> String {
         return String.random(ofLength: 5)
+    }
+
+    public static func randomFakeUrl() -> String {
+        return URL.random().absoluteString
+    }
+    
+    public static func randomFakeAvatar() -> String {
+        return Self.randomAvatar()
+    }
+    
+    public static func randomFakePhotoUrl() -> String {
+        return Self.randomAvatar()
+    }
+    
+    public static func randomAvatar() -> String {
+        return "https://i.pravatar.cc/150?img=\(Int.random(0, 70))"
     }
 
     public static func randomCurrency() -> String {

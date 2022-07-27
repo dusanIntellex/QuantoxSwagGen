@@ -89,6 +89,20 @@ public class APIClient {
         }
         return cancellableRequest
     }
+    
+    public func mockRequest<ResponseType, T: Encodable>(request: APIRequest<ResponseType>, statusCode: Int, mockData: T?) -> APIResponse<ResponseType> {
+        var data = Data()
+        if let mockData = mockData {
+            data = try! jsonEncoder.encode(mockData)
+        }
+        do {
+            let result = try ResponseType(statusCode: statusCode, data: data, decoder: jsonDecoder)
+            return APIResponse<ResponseType>(request: request, result: .success(result))
+        }
+        catch {
+            return APIResponse<ResponseType>(request: request, result: .failure(.decodingError(error as! DecodingError)))
+        }
+    }
 
     private func makeNetworkRequest<T>(request: APIRequest<T>, urlRequest: URLRequest, requestBehaviour: RequestBehaviourGroup, completionQueue: DispatchQueue, complete: @escaping (APIResponse<T>) -> Void) -> Request {
         requestBehaviour.beforeSend()
@@ -225,6 +239,12 @@ extension APIRequest {
     /// makes a request using the default APIClient. Change your baseURL in APIClient.default.baseURL
     public func makeRequest(complete: @escaping (APIResponse<ResponseType>) -> Void) {
         APIClient.default.makeRequest(self, complete: complete)
+    }
+    
+    /// mock data for API request
+    public func mockRequest<T : Encodable>(statusCode: Int, mockData: T, complete: @escaping (APIResponse<ResponseType>) -> Void) {
+        let response = APIClient.default.mockRequest(request: self, statusCode: statusCode, mockData: mockData)
+        complete(response)
     }
 }
 
