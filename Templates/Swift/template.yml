@@ -42,6 +42,8 @@ templateFiles:
   - path: Sources/RequestBehaviour.swift
   - path: Sources/AnyCodable.swift
   - path: Sources/SwiftRandoms.swift
+  - path: Sources/Logger.swift
+  - path: Sources/Reachability.swift
   - path: Podspec.podspec
     destination: "{{ options.name }}.podspec"
   - path: Sources/Enum.swift

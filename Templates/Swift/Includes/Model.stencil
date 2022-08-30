@@ -183,7 +183,7 @@ public {{ options.modelType }} {{ type }}: {% if parent %}{{ parent.type }}{% el
 // MARK: - Random Element
 extension {{ type}} : RandomElementProtocol {
     public static func random() -> {{ type }} {
-                return {{ type }}({% for property in allProperties %}
+        return {{ type }}({% for property in allProperties %}
             {% for singleEnum in enums where singleEnum.enumName == property.type %}{{ property.name }} : {{property.type}}.allCases.randomElement()!{% empty %}{% if (property.name == "country" or property.name == "city" or property.name == "state" or property.name == "username" or property.name == "lastName" or property.name == "firstName" or property.name == "title" or property.name == "street" or property.name == "url" or property.name == "avatar" or property.name == "photoUrl" or property.name == "email") and property.type == "String" %}
             {{ property.name }}: Randoms.randomFake{{property.name|upperFirstLetter}}(){% elif property.type == "File" or property.type == "[String: Any]" or property.type == "[String: String]" or property.type == "[[String: Any]]" %}{{ property.name }} : {{ property.type }}(){% else %}{% if property.isArray %}{{ property.name }} : {{property.type}}.random(){% else %}{{ property.name }} : {{ property.type }}.random(){% endif %}{% endif %}{% endfor %}{% ifnot forloop.last %}, {% endif %}{% endfor %}
         )
