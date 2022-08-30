@@ -2,6 +2,7 @@
 
 import Foundation
 import Alamofire
+import Combine
 
 /// Manages and sends APIRequests
 public class APIClient {
@@ -46,6 +47,10 @@ public class APIClient {
     public func makeRequest<T>(_ request: APIRequest<T>, behaviours: [RequestBehaviour] = [], completionQueue: DispatchQueue = DispatchQueue.main, complete: @escaping (APIResponse<T>) -> Void) -> CancellableRequest? {
         // create composite behaviour to make it easy to call functions on array of behaviours
         let requestBehaviour = RequestBehaviourGroup(request: request, behaviours: self.behaviours + behaviours)
+        
+        guard Reachability.isConnectedToNetwork() else {
+            throw APIClient.connectionError
+        }
 
         // create the url request from the request
         var urlRequest: URLRequest
@@ -90,6 +95,12 @@ public class APIClient {
         return cancellableRequest
     }
     
+    /// Mock a network request
+    /// - Parameters:
+    ///   - request: API request to mock
+    ///   - statusCode: Mock status code
+    ///   - mockData: Mock data
+    /// - Returns: Sync returned mocked data
     public func mockRequest<ResponseType, T: Encodable>(request: APIRequest<ResponseType>, statusCode: Int, mockData: T?) -> APIResponse<ResponseType> {
         var data = Data()
         if let mockData = mockData {
@@ -97,7 +108,11 @@ public class APIClient {
         }
         do {
             let result = try ResponseType(statusCode: statusCode, data: data, decoder: jsonDecoder)
-            return APIResponse<ResponseType>(request: request, result: .success(result))
+            if result.successful {
+                return APIResponse<ResponseType>(request: request, result: .success(result))
+            } else {
+                return APIResponse<ResponseType>(request: request, result: .failure(.unexpectedStatusCode(statusCode: statusCode, data: data)))
+            }
         }
         catch {
             return APIResponse<ResponseType>(request: request, result: .failure(.decodingError(error as! DecodingError)))
@@ -205,6 +220,7 @@ public class APIClient {
         requestBehaviour.onResponse(response: response.asAny())
 
         completionQueue.async {
+            Logger.logDataResponse(response)
             complete(response)
         }
     }
@@ -235,16 +251,47 @@ public class CancellableRequest {
 
 // Helper extension for sending requests
 extension APIRequest {
-
+    
     /// makes a request using the default APIClient. Change your baseURL in APIClient.default.baseURL
     public func makeRequest(complete: @escaping (APIResponse<ResponseType>) -> Void) {
         APIClient.default.makeRequest(self, complete: complete)
     }
     
+    /// Wrapper for publishers
+    public func makeRequest() -> Future<APIResponse<ResponseType>, Never> {
+        return Future() { promise in
+            APIClient.default.makeRequest(self) { response in
+                promise(Result.success(response))
+            }
+        }
+    }
+
     /// mock data for API request
     public func mockRequest<T : Encodable>(statusCode: Int, mockData: T, complete: @escaping (APIResponse<ResponseType>) -> Void) {
         let response = APIClient.default.mockRequest(request: self, statusCode: statusCode, mockData: mockData)
         complete(response)
+    }
+
+    public func mockRequest<T : Encodable>(statusCode: Int, mockData: T) -> Future<APIResponse<ResponseType>, Never> {
+        let response = APIClient.default.mockRequest(request: self, statusCode: statusCode, mockData: mockData)
+        return Future() { promise in
+            promise(Result.success(response))
+        }
+    }
+}
+
+// Helper for creating request for APIClient
+extension APIClient {
+    public func makeRequest<T>(request: APIRequest<T>) -> Future<APIResponse<T>, Never> {
+        return Future() { promise in
+            self.makeRequest(request) { response in
+                promise(Result.success(response))
+            }
+        }
+    }
+    
+    public func mockRequest<T, Q: Encodable>(request: APIRequest<T>, statusCode: Int, data: Q) -> Future<APIResponse<T>, Never> {
+        return request.mockRequest(statusCode: statusCode, mockData: data)
     }
 }
 
